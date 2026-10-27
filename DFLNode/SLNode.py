@@ -929,7 +929,39 @@ class FedProxClient:
 
         return self.model.get_weights()
 
+class SubFWAlgorithm:
+    def __init__(self, model_eval_matrix, gamma=1.0, min_connections=2):
+        self.V = np.array(model_eval_matrix)
+        self.N = self.V.shape[0]
+        self.gamma = gamma
+        self.min_connections = min_connections
+        self.X = np.ones_like(self.V) / self.N  # Init: equal weights
 
+    def compute_gradient(self):
+        return -self.gamma * self.V
+
+    def linear_subproblem(self, grad_row):
+        # Enforce at least `min_connections` non-zero entries
+        k = self.min_connections
+        top_k_indices = np.argsort(grad_row)[:k]
+        s = np.zeros_like(grad_row)
+        s[top_k_indices] = 1.0 / k
+        return s
+
+    def optimize_topology(self, max_iters=50, tol=1e-4):
+        for k in range(max_iters):
+            grad = self.compute_gradient()
+            step_size = 2.0 / (k + 2)
+            prev_X = self.X.copy()
+
+            for i in range(self.N):
+                s = self.linear_subproblem(grad[i])
+                self.X[i] = (1 - step_size) * self.X[i] + step_size * s
+
+            if np.linalg.norm(self.X - prev_X) < tol:
+                break
+
+        return self.X
 
 
 

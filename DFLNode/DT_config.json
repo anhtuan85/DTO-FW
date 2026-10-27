@@ -1,0 +1,9 @@
+{
+    "DT_IP": "117.17.102.90",
+	"DT_Port" : 8000,
+	"DB_IP" : "117.17.102.90",
+	"DB_port" : 8080,
+	"DB_name" : "sldt_edge",
+	"DB_username" : "device",
+	"DB_pass" : "1234"
+}
